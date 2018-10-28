@@ -130,6 +130,7 @@ namespace Game1
             //    ball.SetDirection(new_direction);
             //}
 
+            //Scoring
             if (ball.Position.Y >  Window.ClientBounds.Height)
             {
                 //ball.LastTouch.Score += 1;
@@ -144,6 +145,7 @@ namespace Game1
                 this.ResetBall();
             }
 
+            //ball direction reflection
             for (int i = 0; i < players.Length; ++i)
             {
                 players[i].Update(gameTime);
@@ -171,6 +173,8 @@ namespace Game1
                     }
                 }
             }
+
+            //collision for walls
             //ball.Rectangle.Contains(wall_left.Rectangle);
             if (Rectangle.Intersect(ball.Rectangle, wall_left.Rectangle) != Rectangle.Empty)
             {
@@ -186,14 +190,23 @@ namespace Game1
             wall_left.Update(gameTime);
             wall_right.Update(gameTime);
 
+            //Spawn powerup
             System.Random rng = new System.Random();
-            if(rng.Next(0,60000) < 50)
-            {
-                
+            if(rng.Next(0,60000) < 100)
+            {                
                 float rngPUx = rng.Next(16, Window.ClientBounds.Width - 16);
                 float rngPUy = Window.ClientBounds.Height / 2;
                 if (powerups.Count < 5)                
-                    powerups.Add(new Powerup(powerup_texture, new Vector2(rngPUx, rngPUy)));
+                   powerups.Add(powerup = new Powerup(powerup_texture, new Vector2(rngPUx, rngPUy)));
+            }
+            
+            if (powerups.Count == 0)
+            {
+               
+            }
+            else if (Rectangle.Intersect(ball.Rectangle, powerup.Rectangle) != Rectangle.Empty)
+            {                
+                powerups.RemoveAt(0);
                 
             }
 
