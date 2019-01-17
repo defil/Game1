@@ -30,9 +30,9 @@ namespace Game1
         Texture2D box;
         SpriteFont scoreFont;
 
-        SoundEffect 
+        SoundEffect
             ballBounce;
-             
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -67,12 +67,11 @@ namespace Game1
 
             var wall_tex = Content.Load<Texture2D>("wall");
 
-            wall_left = new Wall(wall_tex, new Vector2(0 + wall_tex.Width / 2, 0 + Window.ClientBounds.Height / 2 )); //(Window.ClientBounds.Height / 2) - wall_tex.Height / 2 )
+            wall_left = new Wall(wall_tex, new Vector2(0 + wall_tex.Width / 2, 0 + Window.ClientBounds.Height / 2)); //(Window.ClientBounds.Height / 2) - wall_tex.Height / 2 )
             wall_right = new Wall(wall_tex, new Vector2(Window.ClientBounds.Width - wall_tex.Width / 2, 0 + Window.ClientBounds.Height / 2));
 
             powerup_texture = Content.Load<Texture2D>("powerup");
-            powerups = new List<Powerup>();
-            var rng = new System.Random();
+            powerups = new List<Powerup>();          
 
 
 
@@ -110,7 +109,7 @@ namespace Game1
         protected override void Update(GameTime gameTime)
         {
             // TODO: Add your update logic here
-            if(Keyboard.GetState().IsKeyDown(Keys.Space))
+            if (Keyboard.GetState().IsKeyDown(Keys.Space))
             {
                 ResetBall();
             }
@@ -131,7 +130,7 @@ namespace Game1
             //}
 
             //Scoring
-            if (ball.Position.Y >  Window.ClientBounds.Height)
+            if (ball.Position.Y > Window.ClientBounds.Height)
             {
                 //ball.LastTouch.Score += 1;
 
@@ -139,7 +138,7 @@ namespace Game1
                 this.ResetBall();
 
             }
-            else if(ball.Position.Y < 0)
+            else if (ball.Position.Y < 0)
             {
                 players[0].Score++;
                 this.ResetBall();
@@ -155,7 +154,8 @@ namespace Game1
                 if (intersection != Rectangle.Empty)
                 {
                     intersections.Add(intersection);
-                    if(ball.Rectangle.Bottom > players[i].Rectangle.Top)
+                    ball.LastTouch = players[i];
+                    if (ball.Rectangle.Bottom > players[i].Rectangle.Top)
                     {
                         Vector2 new_direction = Vector2.Reflect(ball.Direction, Vector2.Normalize(ball.Direction));
 
@@ -169,7 +169,6 @@ namespace Game1
 
                         ballBounce.Play();
 
-                        ball.LastTouch = players[i];
                     }
                 }
             }
@@ -192,24 +191,44 @@ namespace Game1
 
             //Spawn powerup
             System.Random rng = new System.Random();
-            if(rng.Next(0,60000) < 100)
-            {                
+            if (rng.Next(0, 60000) < 10000)
+            {
                 float rngPUx = rng.Next(16, Window.ClientBounds.Width - 16);
                 float rngPUy = Window.ClientBounds.Height / 2;
-                if (powerups.Count < 5)                
-                   powerups.Add(powerup = new Powerup(powerup_texture, new Vector2(rngPUx, rngPUy)));
-            }
-            
-            if (powerups.Count == 0)
-            {
-               
-            }
-            else if (Rectangle.Intersect(ball.Rectangle, powerup.Rectangle) != Rectangle.Empty)
-            {                
-                powerups.RemoveAt(0);
-                
+                if (powerups.Count < 5)
+
+
+                    powerup = null;
+                switch (rng.Next(0, 10))
+                {
+                    case 0:                    
+                        powerup = new ScoreSnack(new Vector2(rngPUx, rngPUy), this.Content);                        
+                        powerups.Add(powerup);
+                        break;
+
+                    case 1:
+                        powerup = new ResetToZero(new Vector2(rngPUx, rngPUy), this.Content);
+                        powerups.Add(powerup);
+                        break;
+                    
+
+                }
+
             }
 
+            //remove the powerup that's hit
+            foreach (Powerup p in powerups)
+            {
+                if (p.Rectangle.Intersects(ball.Rectangle))
+                {
+                    if (ball.LastTouch != null)
+                    {
+                        p.ApplyEffect(ball.LastTouch);
+                        this.powerups.Remove(p);
+                        break;
+                    }
+                }
+            }
 
             base.Update(gameTime);
         }
